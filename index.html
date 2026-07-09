@@ -1,0 +1,313 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sesgo</title>
+<style>
+:root{
+  --surface:#fcfcfb; --plane:#f9f9f7; --ink:#0b0b0b; --ink2:#52514e;
+  --mut:#898781; --grid:#e1e0d9; --border:rgba(11,11,11,.10);
+  --up:#006300; --dn:#d03b3b; --azul:#2a78d6; --rojo:#e34948;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --surface:#1a1a19; --plane:#0d0d0d; --ink:#ffffff; --ink2:#c3c2b7;
+         --mut:#898781; --grid:#2c2c2a; --border:rgba(255,255,255,.10);
+         --up:#0ca30c; --dn:#e66767; --azul:#3987e5; --rojo:#e66767; }
+}
+/* el toggle del visor de Artifacts estampa data-theme y debe ganar en ambas direcciones */
+:root[data-theme="dark"]{ --surface:#1a1a19; --plane:#0d0d0d; --ink:#ffffff; --ink2:#c3c2b7;
+  --mut:#898781; --grid:#2c2c2a; --border:rgba(255,255,255,.10);
+  --up:#0ca30c; --dn:#e66767; --azul:#3987e5; --rojo:#e66767; }
+:root[data-theme="light"]{ --surface:#fcfcfb; --plane:#f9f9f7; --ink:#0b0b0b; --ink2:#52514e;
+  --mut:#898781; --grid:#e1e0d9; --border:rgba(11,11,11,.10);
+  --up:#006300; --dn:#d03b3b; --azul:#2a78d6; --rojo:#e34948; }
+*{box-sizing:border-box}
+body{margin:0;background:var(--plane);color:var(--ink);
+  font:14px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif;padding:20px}
+h1{font-size:20px;margin:0 0 2px}
+.tag{font-size:12px;font-weight:400;color:var(--mut);text-transform:uppercase;
+  letter-spacing:.08em;margin-left:8px;vertical-align:2px}
+h2{font-size:15px;margin:26px 0 8px}
+.sub{color:var(--ink2);font-size:12.5px;margin-bottom:14px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:10px;
+  padding:14px 16px;margin-bottom:6px;overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+th{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--mut);
+  text-align:right;padding:6px 8px;border-bottom:1px solid var(--grid);font-weight:600}
+th:first-child{text-align:left}
+td{padding:6px 8px;text-align:right;border-bottom:1px solid var(--grid);white-space:nowrap}
+tr:last-child td{border-bottom:none}
+td.act{text-align:left;font-weight:600}
+td.cls,.sesgo{color:var(--ink2);font-weight:400;text-align:left;font-size:12.5px}
+.up{color:var(--up)} .dn{color:var(--dn)} .mut{color:var(--mut);font-size:10px}
+.pill{display:inline-block;min-width:38px;text-align:center;padding:2px 8px;
+  border-radius:99px;font-weight:700;background:var(--bl);color:var(--il)}
+td.dv{background:var(--bl);color:var(--il);text-align:center;font-size:12px}
+td.dv.na{background:transparent;color:var(--mut)}
+@media (prefers-color-scheme: dark){
+  .pill{background:var(--bd);color:var(--id)}
+  td.dv{background:var(--bd);color:var(--id)}
+}
+:root[data-theme="dark"] .pill{background:var(--bd);color:var(--id)}
+:root[data-theme="dark"] td.dv{background:var(--bd);color:var(--id)}
+:root[data-theme="light"] .pill{background:var(--bl);color:var(--il)}
+:root[data-theme="light"] td.dv{background:var(--bl);color:var(--il)}
+.meter{display:inline-block;width:90px;height:8px;border-radius:4px;
+  background:var(--grid);vertical-align:middle;overflow:hidden}
+.fill{height:100%;border-radius:4px}
+.fb{background:var(--azul)} .fr{background:var(--rojo)}
+.mv{margin-left:6px;font-size:12px;color:var(--ink2)}
+.meterc{min-width:140px}
+th.hoy{color:var(--ink);border-bottom:2px solid var(--azul)}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
+.tile{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px}
+.tl{font-size:11.5px;color:var(--mut);text-transform:uppercase;letter-spacing:.04em}
+.tv{font-size:26px;font-weight:650;margin:2px 0}
+.tr{font-size:13px;color:var(--ink2);font-weight:400}
+.td{font-size:12px;color:var(--ink2)}
+tr.hi td{font-weight:600}
+.chip{display:inline-block;padding:1px 9px;border-radius:99px;font-size:11.5px;font-weight:700;
+  text-transform:uppercase;letter-spacing:.03em}
+.chip.activa{background:var(--azul);color:#fff}
+.chip.vigilar{background:transparent;color:var(--ink2);border:1px solid var(--mut)}
+.chip.evitar{background:var(--grid);color:var(--mut)}
+td.det{text-align:left;white-space:normal;min-width:260px;color:var(--ink2);font-size:12.5px}
+.leyenda{font-size:12px;color:var(--ink2);margin-top:6px}
+.sw{display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:-1px;margin:0 3px 0 10px}
+footer{color:var(--mut);font-size:11.5px;margin-top:22px}
+</style>
+
+<h1>Sesgo <span class="tag">terminal macro semanal</span></h1>
+<div class="sub">Generado el 08-jul.-2026 18:26 (hora CDMX) · COT al 30-jun.-2026 · precios al 05-jul.-2026</div>
+
+<h2>Score compuesto por activo</h2>
+<div class="card"><table>
+<tr><th>Activo</th><th>Clase</th><th>Score</th><th>Sesgo</th><th>Macro</th><th>COT</th>
+<th>Técnico</th><th>Sent.</th><th>Estac.</th><th>Ret 1m</th><th>Neto %OI</th></tr><tr><td class='act'>Dow Jones</td><td class='cls'>Índices</td><td><span class='pill' style='--bl:#4b8cda;--bd:#397ac7;--il:#ffffff;--id:#ffffff'>85</span></td>
+    <td class='sesgo'>alcista</td><td>–</td><td>100</td><td>100</td><td>44</td><td>88</td>
+    <td><span class='up'>+3.1%</span></td><td><span class='up'>+14.5%</span></td></tr>
+<tr><td class='act'>DXY</td><td class='cls'>FX</td><td><span class='pill' style='--bl:#6ca0dd;--bd:#396daa;--il:#ffffff;--id:#ffffff'>78</span></td>
+    <td class='sesgo'>alcista</td><td>48</td><td>99</td><td>100</td><td>–</td><td>35</td>
+    <td><span class='up'>+1.6%</span></td><td><span class='up'>+24.0%</span></td></tr>
+<tr><td class='act'>S&amp;P 500</td><td class='cls'>Índices</td><td><span class='pill' style='--bl:#7fabdf;--bd:#396599;--il:#ffffff;--id:#ffffff'>74</span></td>
+    <td class='sesgo'>alcista</td><td>–</td><td>99</td><td>75</td><td>44</td><td>82</td>
+    <td><span class='dn'>-1.7%</span></td><td><span class='dn'>-1.9%</span></td></tr>
+<tr><td class='act'>Cobre</td><td class='cls'>Commodities</td><td><span class='pill' style='--bl:#bcd0e6;--bd:#384d63;--il:#0b0b0b;--id:#e8e8e3'>61</span></td>
+    <td class='sesgo'>alcista leve</td><td>–</td><td>76</td><td>50</td><td>–</td><td>53</td>
+    <td><span class='dn'>-8.1%</span></td><td><span class='up'>+25.5%</span></td></tr>
+<tr><td class='act'>Nasdaq 100</td><td class='cls'>Índices</td><td><span class='pill' style='--bl:#e2e7ea;--bd:#383e42;--il:#0b0b0b;--id:#e8e8e3'>53</span></td>
+    <td class='sesgo'>neutral</td><td>–</td><td>11</td><td>75</td><td>44</td><td>88</td>
+    <td><span class='dn'>-4.3%</span></td><td><span class='dn'>-2.7%</span></td></tr>
+<tr><td class='act'>Gas Natural</td><td class='cls'>Commodities</td><td><span class='pill' style='--bl:#ebeceb;--bd:#383a39;--il:#0b0b0b;--id:#e8e8e3'>51</span></td>
+    <td class='sesgo'>neutral</td><td>–</td><td>27</td><td>75</td><td>–</td><td>29</td>
+    <td><span class='up'>+0.9%</span></td><td><span class='dn'>-10.4%</span></td></tr>
+<tr><td class='act'>MXN</td><td class='cls'>FX</td><td><span class='pill' style='--bl:#f0ebe8;--bd:#3c3936;--il:#0b0b0b;--id:#e8e8e3'>49</span></td>
+    <td class='sesgo'>neutral</td><td>61</td><td>35</td><td>50</td><td>–</td><td>53</td>
+    <td><span class='dn'>-1.1%</span></td><td><span class='up'>+36.3%</span></td></tr>
+<tr><td class='act'>AUD</td><td class='cls'>FX</td><td><span class='pill' style='--bl:#edccc9;--bd:#5d4240;--il:#0b0b0b;--id:#e8e8e3'>41</span></td>
+    <td class='sesgo'>bajista leve</td><td>48</td><td>45</td><td>25</td><td>–</td><td>59</td>
+    <td><span class='dn'>-2.7%</span></td><td><span class='dn'>-8.2%</span></td></tr>
+<tr><td class='act'>VIX</td><td class='cls'>Índices</td><td><span class='pill' style='--bl:#edccc9;--bd:#5d4240;--il:#0b0b0b;--id:#e8e8e3'>41</span></td>
+    <td class='sesgo'>bajista leve</td><td>–</td><td>62</td><td>25</td><td>44</td><td>41</td>
+    <td><span class='up'>+2.4%</span></td><td><span class='dn'>-16.5%</span></td></tr>
+<tr><td class='act'>GBP</td><td class='cls'>FX</td><td><span class='pill' style='--bl:#eaa09e;--bd:#8b4e4d;--il:#0b0b0b;--id:#ffffff'>30</span></td>
+    <td class='sesgo'>bajista</td><td>76</td><td>3</td><td>0</td><td>–</td><td>65</td>
+    <td><span class='dn'>-0.6%</span></td><td><span class='dn'>-34.6%</span></td></tr>
+<tr><td class='act'>NZD</td><td class='cls'>FX</td><td><span class='pill' style='--bl:#e88c8b;--bd:#9f5453;--il:#ffffff;--id:#ffffff'>25</span></td>
+    <td class='sesgo'>bajista</td><td>60</td><td>0</td><td>0</td><td>–</td><td>71</td>
+    <td><span class='dn'>-2.8%</span></td><td><span class='dn'>-57.4%</span></td></tr>
+<tr><td class='act'>CAD</td><td class='cls'>FX</td><td><span class='pill' style='--bl:#e88887;--bd:#a35554;--il:#ffffff;--id:#ffffff'>24</span></td>
+    <td class='sesgo'>bajista</td><td>58</td><td>4</td><td>0</td><td>–</td><td>59</td>
+    <td><span class='dn'>-2.1%</span></td><td><span class='dn'>-43.5%</span></td></tr>
+<tr><td class='act'>CHF</td><td class='cls'>FX</td><td><span class='pill' style='--bl:#e7817f;--bd:#ac5756;--il:#ffffff;--id:#ffffff'>22</span></td>
+    <td class='sesgo'>bajista</td><td>26</td><td>24</td><td>0</td><td>–</td><td>65</td>
+    <td><span class='dn'>-1.9%</span></td><td><span class='dn'>-36.8%</span></td></tr>
+<tr><td class='act'>JPY</td><td class='cls'>FX</td><td><span class='pill' style='--bl:#e77977;--bd:#b45959;--il:#ffffff;--id:#ffffff'>20</span></td>
+    <td class='sesgo'>bajista</td><td>44</td><td>0</td><td>0</td><td>–</td><td>71</td>
+    <td><span class='dn'>-0.9%</span></td><td><span class='dn'>-35.3%</span></td></tr>
+<tr><td class='act'>Oro</td><td class='cls'>Commodities</td><td><span class='pill' style='--bl:#e77977;--bd:#b45959;--il:#ffffff;--id:#ffffff'>20</span></td>
+    <td class='sesgo'>bajista</td><td>–</td><td>35</td><td>0</td><td>–</td><td>65</td>
+    <td><span class='dn'>-8.4%</span></td><td><span class='up'>+52.5%</span></td></tr>
+<tr><td class='act'>WTI</td><td class='cls'>Commodities</td><td><span class='pill' style='--bl:#e77977;--bd:#b45959;--il:#ffffff;--id:#ffffff'>20</span></td>
+    <td class='sesgo'>bajista</td><td>–</td><td>36</td><td>0</td><td>–</td><td>59</td>
+    <td><span class='dn'>-26.7%</span></td><td><span class='up'>+5.8%</span></td></tr>
+<tr><td class='act'>EUR</td><td class='cls'>FX</td><td><span class='pill' style='--bl:#e67573;--bd:#b85b5a;--il:#ffffff;--id:#ffffff'>19</span></td>
+    <td class='sesgo'>bajista</td><td>40</td><td>5</td><td>0</td><td>–</td><td>59</td>
+    <td><span class='dn'>-1.5%</span></td><td><span class='up'>+0.1%</span></td></tr>
+<tr><td class='act'>Plata</td><td class='cls'>Commodities</td><td><span class='pill' style='--bl:#e45958;--bd:#d56262;--il:#ffffff;--id:#ffffff'>12</span></td>
+    <td class='sesgo'>bajista</td><td>–</td><td>14</td><td>0</td><td>–</td><td>59</td>
+    <td><span class='dn'>-19.5%</span></td><td><span class='up'>+25.1%</span></td></tr></table>
+<div class="leyenda">Score 0–100: &gt;50 sesgo alcista, &lt;50 bajista.
+<span class="sw" style="background:var(--rojo)"></span>bajista
+<span class="sw" style="background:var(--grid)"></span>neutral
+<span class="sw" style="background:var(--azul)"></span>alcista ·
+Ponderaciones — FX: macro 30 / COT 30 / técnico 30 / estac. 10 ·
+Índices: técnico 40 / COT 25 / sentimiento 25 / estac. 10 ·
+Commodities: técnico 50 / COT 40 / estac. 10.
+<br>⚠ Backtest 2020–2026 (COT+técnico+estac.): los extremos revierten — scores
+&gt;80 promediaron retorno negativo a 1 y 4 semanas. Leer el score como mapa del
+consenso; los extremos son señal de saturación, no de continuación.</div></div>
+
+<h2>Señales de swing (3 setups)</h2>
+<div class="card"><table>
+<tr><th>Activo</th><th>Setup</th><th>Dirección</th><th>Estado</th><th>Detalle</th></tr><tr><td class='act'>GBP</td><td class='cls'>2 · Extremo COT</td><td><span class='up'>compra</span></td>
+      <td><span class='chip activa'>ACTIVA</span></td><td class='det'>cortos saturados (índice 3) y los fondos YA cierran cortos (Δ +3572); giro iniciando</td></tr>
+<tr><td class='act'>S&amp;P 500</td><td class='cls'>2 · Extremo COT</td><td><span class='dn'>venta</span></td>
+      <td><span class='chip activa'>ACTIVA</span></td><td class='det'>largos saturados (índice 99) y los fondos YA cierran largos (Δ -2144); giro iniciando</td></tr>
+<tr><td class='act'>AUD</td><td class='cls'>3 · Continuación con espacio</td><td><span class='dn'>venta</span></td>
+      <td><span class='chip activa'>ACTIVA</span></td><td class='det'>tendencia bajista (técnico 25) con COT 45 sin saturar y score 41 moderado</td></tr>
+<tr><td class='act'>CAD</td><td class='cls'>1 · Divergencia macro-precio</td><td><span class='up'>compra</span></td>
+      <td><span class='chip vigilar'>VIGILAR</span></td><td class='det'>macro 58 vs COT 4 y técnico 0 — castigado de más; esperar cierre sobre SMA50 o catalizador</td></tr>
+<tr><td class='act'>GBP</td><td class='cls'>1 · Divergencia macro-precio</td><td><span class='up'>compra</span></td>
+      <td><span class='chip vigilar'>VIGILAR</span></td><td class='det'>macro 76 vs COT 3 y técnico 0 — castigado de más; esperar cierre sobre SMA50 o catalizador</td></tr>
+<tr><td class='act'>NZD</td><td class='cls'>1 · Divergencia macro-precio</td><td><span class='up'>compra</span></td>
+      <td><span class='chip vigilar'>VIGILAR</span></td><td class='det'>macro 60 vs COT 0 y técnico 0 — castigado de más; esperar cierre sobre SMA50 o catalizador</td></tr>
+<tr><td class='act'>CAD</td><td class='cls'>2 · Extremo COT</td><td>—</td>
+      <td><span class='chip evitar'>EVITAR</span></td><td class='det'>cortos saturados (índice 4) pero aún agregan (Δ -4014); no abrir cortos nuevos</td></tr>
+<tr><td class='act'>DXY</td><td class='cls'>2 · Extremo COT</td><td>—</td>
+      <td><span class='chip evitar'>EVITAR</span></td><td class='det'>largos saturados (índice 99) pero aún agregan (Δ +88); no abrir largos nuevos</td></tr>
+<tr><td class='act'>Dow Jones</td><td class='cls'>2 · Extremo COT</td><td>—</td>
+      <td><span class='chip evitar'>EVITAR</span></td><td class='det'>largos saturados (índice 100) pero aún agregan (Δ +2595); no abrir largos nuevos</td></tr>
+<tr><td class='act'>EUR</td><td class='cls'>2 · Extremo COT</td><td>—</td>
+      <td><span class='chip evitar'>EVITAR</span></td><td class='det'>cortos saturados (índice 5) pero aún agregan (Δ -29059); no abrir cortos nuevos</td></tr>
+<tr><td class='act'>JPY</td><td class='cls'>2 · Extremo COT</td><td>—</td>
+      <td><span class='chip evitar'>EVITAR</span></td><td class='det'>cortos saturados (índice 0) pero aún agregan (Δ -8988); no abrir cortos nuevos</td></tr>
+<tr><td class='act'>NZD</td><td class='cls'>2 · Extremo COT</td><td>—</td>
+      <td><span class='chip evitar'>EVITAR</span></td><td class='det'>cortos saturados (índice 0) pero aún agregan (Δ -8436); no abrir cortos nuevos</td></tr></table>
+<div class="leyenda"><b>ACTIVA</b> = condiciones completas ·
+<b>VIGILAR</b> = falta confirmación técnica (no entrar aún) ·
+<b>EVITAR</b> = posicionamiento saturado, no abrir en esa dirección.
+Señales de días-semanas; entrar con estructura técnica propia, stop 1.5×ATR
+y riesgo fijo por operación. VIX excluido.</div></div>
+
+
+<h2>Track record de señales</h2>
+<div class="card"><table>
+<tr><th>Fecha</th><th>Activo</th><th>Setup</th><th>Dirección</th><th>Ret. actual</th>
+<th>Ret. 1s</th><th>Ret. 4s</th><th>Estado</th></tr><tr><td>08-jul.</td><td class='act'>GBP</td><td class='cls'>2 · Extremo COT</td><td><span class='up'>compra</span></td>
+    <td>–</td><td>–</td><td>–</td><td class='cls'>pendiente de entrada</td></tr>
+<tr><td>08-jul.</td><td class='act'>S&amp;P 500</td><td class='cls'>2 · Extremo COT</td><td><span class='dn'>venta</span></td>
+    <td>–</td><td>–</td><td>–</td><td class='cls'>pendiente de entrada</td></tr>
+<tr><td>08-jul.</td><td class='act'>AUD</td><td class='cls'>3 · Continuación con espacio</td><td><span class='dn'>venta</span></td>
+    <td>–</td><td>–</td><td>–</td><td class='cls'>pendiente de entrada</td></tr></table>
+<div class="leyenda">Todas las señales ACTIVA emitidas, ganadoras y perdedoras —
+sin excepciones. Entrada = primer cierre posterior a la señal; un episodio se
+"cierra" a las 4 semanas. Retornos en la dirección de la señal.</div></div>
+
+<h2>Monitor macro</h2>
+<div class="card"><table>
+<tr><th>Economía</th><th>Inflación (CPI a/a)</th><th>Desempleo</th><th>Tasa de política</th><th>PIB a/a</th><th>CLI (ciclo)</th></tr><tr><td class='act'>EE.UU.</td>
+    <td title='dato al 2026-05-01'>4.2% <span class='mut'>▲</span></td><td title='dato al 2026-06-01'>4.2% <span class='mut'>▼</span></td>
+    <td title='dato al 2026-06-01'>3.62%</td><td title='dato al 2026-01-01'>2.6% <span class='mut'>▲</span></td><td title='dato al 2026-05-01'>101.0 <span class='mut'>▲</span></td></tr>
+<tr><td class='act'>Zona Euro</td>
+    <td title='dato al 2026-05-01'>3.1% <span class='mut'>▲</span></td><td title='dato al 2025-11-01'>6.3% <span class='mut'>▼</span></td>
+    <td title='dato al 2026-06-01'>2.25%</td><td title='dato al 2026-01-01'>0.3% <span class='mut'>▼</span></td><td title='dato al 2026-05-01 (proxy Alemania)'>100.8 <span class='mut'>▼</span></td></tr>
+<tr><td class='act'>Japón</td>
+    <td title='dato al 2026-04-01'>1.4% <span class='mut'>▼</span></td><td title='dato al 2026-04-01'>2.7% <span class='mut'>▼</span></td>
+    <td title='dato al 2026-06-01'>1.00%</td><td title='dato al 2026-01-01'>0.3% <span class='mut'>▼</span></td><td title='dato al 2026-05-01'>100.3 <span class='mut'>▲</span></td></tr>
+<tr><td class='act'>Reino Unido</td>
+    <td title='dato al 2026-04-01'>3.0% <span class='mut'>▼</span></td><td title='dato al 2026-01-01'>4.9% <span class='mut'>▼</span></td>
+    <td title='dato al 2026-05-01'>3.75%</td><td title='dato al 2026-01-01'>1.1% <span class='mut'>▲</span></td><td title='dato al 2026-05-01'>100.5 <span class='mut'>▼</span></td></tr>
+<tr><td class='act'>Canadá</td>
+    <td title='dato al 2026-04-01'>2.8% <span class='mut'>▲</span></td><td title='dato al 2026-05-01'>6.6% <span class='mut'>▼</span></td>
+    <td title='dato al 2026-05-01'>2.25%</td><td title='dato al 2026-01-01'>0.0% <span class='mut'>▼</span></td><td title='dato al 2026-05-01'>101.7 <span class='mut'>▲</span></td></tr>
+<tr><td class='act'>Australia</td>
+    <td title='dato al 2026-01-01'>4.1% <span class='mut'>▲</span></td><td title='dato al 2026-04-01'>4.5% <span class='mut'>▲</span></td>
+    <td title='dato al 2026-05-01'>4.35%</td><td title='dato al 2026-01-01'>2.5% <span class='mut'>▲</span></td><td title='dato al 2026-05-01'>100.8 <span class='mut'>▲</span></td></tr>
+<tr><td class='act'>Suiza</td>
+    <td title='dato al 2026-05-01'>0.6% <span class='mut'>▲</span></td><td title='dato al 2026-01-01'>5.1% </td>
+    <td title='dato al 2026-06-01'>0.00%</td><td title='dato al 2026-01-01'>0.6% <span class='mut'>▼</span></td><td class='namac'>–</td></tr>
+<tr><td class='act'>N. Zelanda</td>
+    <td title='dato al 2026-01-01'>3.1% <span class='mut'>▼</span></td><td title='dato al 2026-01-01'>5.3% <span class='mut'>▼</span></td>
+    <td title='dato al 2026-05-01'>2.25%</td><td title='dato al 2025-10-01'>1.3% <span class='mut'>▲</span></td><td class='namac'>–</td></tr>
+<tr><td class='act'>México</td>
+    <td title='dato al 2026-05-01'>3.9% <span class='mut'>▼</span></td><td title='dato al 2026-04-01'>2.6% <span class='mut'>▼</span></td>
+    <td title='dato al 2026-06-01'>6.50%</td><td title='dato al 2026-01-01'>0.4% <span class='mut'>▼</span></td><td title='dato al 2026-05-01'>103.2 <span class='mut'>▲</span></td></tr></table>
+<div class="leyenda">▲▼ vs dato previo. Pasa el cursor sobre un valor para ver su fecha.
+CLI = indicador líder compuesto OCDE (&gt;100 y subiendo = expansión; zona euro: proxy Alemania;
+sin dato para Suiza/N. Zelanda). Fuentes: FRED, OCDE (DBnomics), BIS, Eurostat.</div></div>
+
+<h2>Posicionamiento institucional (COT · CFTC)</h2>
+<div class="card"><table>
+<tr><th>Activo</th><th>Clase</th><th>Neto no-comercial</th><th>Δ semanal</th>
+<th>Neto %OI</th><th>Índice COT 1a</th><th>Índice 3a</th>
+<th>Retail %OI</th><th>Retail índice 1a</th></tr><tr><td class='act'>Cobre</td><td class='cls'>Commodities</td><td>64,788</td><td><span class='dn'>-6,832</span></td>
+    <td><span class='up'>+25.5%</span></td><td class='meterc'><div class='meter'><div class='fill fb' style='width:76%'></div></div><span class='mv'>76</span></td><td>87</td><td><span class='up'>+3.3%</span></td><td>51</td></tr>
+<tr><td class='act'>WTI</td><td class='cls'>Commodities</td><td>110,531</td><td><span class='dn'>-4,102</span></td>
+    <td><span class='up'>+5.8%</span></td><td class='meterc'><div class='meter'><div class='fill fr' style='width:36%'></div></div><span class='mv'>36</span></td><td>23</td><td><span class='up'>+1.5%</span></td><td>56</td></tr>
+<tr><td class='act'>Oro</td><td class='cls'>Commodities</td><td>194,019</td><td><span class='up'>+12,680</span></td>
+    <td><span class='up'>+52.5%</span></td><td class='meterc'><div class='meter'><div class='fill fr' style='width:35%'></div></div><span class='mv'>35</span></td><td>50</td><td><span class='up'>+7.3%</span></td><td>45</td></tr>
+<tr><td class='act'>Gas Natural</td><td class='cls'>Commodities</td><td>-170,803</td><td><span class='up'>+5,886</span></td>
+    <td><span class='dn'>-10.4%</span></td><td class='meterc'><div class='meter'><div class='fill fr' style='width:27%'></div></div><span class='mv'>27</span></td><td>23</td><td><span class='up'>+1.0%</span></td><td>65</td></tr>
+<tr><td class='act'>Plata</td><td class='cls'>Commodities</td><td>27,368</td><td><span class='up'>+3,617</span></td>
+    <td><span class='up'>+25.1%</span></td><td class='meterc'><div class='meter'><div class='fill fr' style='width:14%'></div></div><span class='mv'>14</span></td><td>33</td><td><span class='up'>+12.8%</span></td><td>0</td></tr>
+<tr><td class='act'>DXY</td><td class='cls'>FX</td><td>13,016</td><td><span class='up'>+88</span></td>
+    <td><span class='up'>+24.0%</span></td><td class='meterc'><div class='meter'><div class='fill fb' style='width:99%'></div></div><span class='mv'>99</span></td><td>79</td><td><span class='up'>+6.0%</span></td><td>98</td></tr>
+<tr><td class='act'>AUD</td><td class='cls'>FX</td><td>-17,700</td><td><span class='dn'>-4,688</span></td>
+    <td><span class='dn'>-8.2%</span></td><td class='meterc'><div class='meter'><div class='fill fr' style='width:45%'></div></div><span class='mv'>45</span></td><td>47</td><td><span class='up'>+7.4%</span></td><td>58</td></tr>
+<tr><td class='act'>MXN</td><td class='cls'>FX</td><td>70,936</td><td><span class='dn'>-3,289</span></td>
+    <td><span class='up'>+36.3%</span></td><td class='meterc'><div class='meter'><div class='fill fr' style='width:35%'></div></div><span class='mv'>35</span></td><td>51</td><td><span class='up'>+1.9%</span></td><td>11</td></tr>
+<tr><td class='act'>CHF</td><td class='cls'>FX</td><td>-38,958</td><td><span class='up'>+2,136</span></td>
+    <td><span class='dn'>-36.8%</span></td><td class='meterc'><div class='meter'><div class='fill fr' style='width:24%'></div></div><span class='mv'>24</span></td><td>23</td><td><span class='dn'>-14.0%</span></td><td>3</td></tr>
+<tr><td class='act'>EUR</td><td class='cls'>FX</td><td>1,099</td><td><span class='dn'>-29,059</span></td>
+    <td><span class='up'>+0.1%</span></td><td class='meterc'><div class='meter'><div class='fill fr' style='width:5%'></div></div><span class='mv'>5</span></td><td>30</td><td><span class='up'>+3.0%</span></td><td>8</td></tr>
+<tr><td class='act'>CAD</td><td class='cls'>FX</td><td>-150,806</td><td><span class='dn'>-4,014</span></td>
+    <td><span class='dn'>-43.5%</span></td><td class='meterc'><div class='meter'><div class='fill fr' style='width:4%'></div></div><span class='mv'>4</span></td><td>20</td><td><span class='dn'>-2.5%</span></td><td>32</td></tr>
+<tr><td class='act'>GBP</td><td class='cls'>FX</td><td>-102,147</td><td><span class='up'>+3,572</span></td>
+    <td><span class='dn'>-34.6%</span></td><td class='meterc'><div class='meter'><div class='fill fr' style='width:3%'></div></div><span class='mv'>3</span></td><td>1</td><td><span class='dn'>-6.5%</span></td><td>0</td></tr>
+<tr><td class='act'>JPY</td><td class='cls'>FX</td><td>-155,092</td><td><span class='dn'>-8,988</span></td>
+    <td><span class='dn'>-35.3%</span></td><td class='meterc'><div class='meter'><div class='fill fr' style='width:0%'></div></div><span class='mv'>0</span></td><td>8</td><td><span class='up'>+1.6%</span></td><td>68 ⚡</td></tr>
+<tr><td class='act'>NZD</td><td class='cls'>FX</td><td>-63,280</td><td><span class='dn'>-8,436</span></td>
+    <td><span class='dn'>-57.4%</span></td><td class='meterc'><div class='meter'><div class='fill fr' style='width:0%'></div></div><span class='mv'>0</span></td><td>0</td><td><span class='dn'>-3.8%</span></td><td>0</td></tr>
+<tr><td class='act'>Dow Jones</td><td class='cls'>Índices</td><td>12,069</td><td><span class='up'>+2,595</span></td>
+    <td><span class='up'>+14.5%</span></td><td class='meterc'><div class='meter'><div class='fill fb' style='width:100%'></div></div><span class='mv'>100</span></td><td>80</td><td><span class='up'>+7.3%</span></td><td>80</td></tr>
+<tr><td class='act'>S&amp;P 500</td><td class='cls'>Índices</td><td>-37,592</td><td><span class='dn'>-2,144</span></td>
+    <td><span class='dn'>-1.9%</span></td><td class='meterc'><div class='meter'><div class='fill fb' style='width:99%'></div></div><span class='mv'>99</span></td><td>60</td><td><span class='up'>+6.4%</span></td><td>82</td></tr>
+<tr><td class='act'>VIX</td><td class='cls'>Índices</td><td>-58,486</td><td><span class='up'>+8,288</span></td>
+    <td><span class='dn'>-16.5%</span></td><td class='meterc'><div class='meter'><div class='fill fb' style='width:62%'></div></div><span class='mv'>62</span></td><td>47</td><td><span class='dn'>-0.6%</span></td><td>15</td></tr>
+<tr><td class='act'>Nasdaq 100</td><td class='cls'>Índices</td><td>-7,604</td><td><span class='up'>+1,540</span></td>
+    <td><span class='dn'>-2.7%</span></td><td class='meterc'><div class='meter'><div class='fill fr' style='width:11%'></div></div><span class='mv'>11</span></td><td>11</td><td><span class='up'>+1.9%</span></td><td>38</td></tr></table>
+<div class="leyenda">Índice COT: posición del neto dentro de su rango de 1/3 años
+(100 = máximo del periodo, 0 = mínimo). Retail = posiciones no reportables del
+mismo reporte (traders pequeños); lectura contrarian en extremos. ⚡ = retail y
+fondos en lados opuestos del rango anual (divergencia &ge;60 puntos) — históricamente
+gana el lado institucional. Reporte legacy futures-only, martes de cada semana.</div></div>
+
+<h2>Estacionalidad (retorno promedio mensual desde 2010, %)</h2>
+<div class="card"><table>
+<tr><th>Activo</th><th>Ene</th><th>Feb</th><th>Mar</th><th>Abr</th><th>May</th><th>Jun</th><th class='hoy'>Jul</th><th>Ago</th><th>Sep</th><th>Oct</th><th>Nov</th><th>Dic</th></tr><tr><td class='act'>Dow Jones</td><td class='dv' style='--bl:#b8cde6;--bd:#384e67;--il:#0b0b0b;--id:#c3c2b7'>0.9</td><td class='dv' style='--bl:#cfdbe8;--bd:#384553;--il:#0b0b0b;--id:#c3c2b7'>0.6</td><td class='dv' style='--bl:#e6e9eb;--bd:#383c3e;--il:#0b0b0b;--id:#c3c2b7'>0.2</td><td class='dv' style='--bl:#9fbee3;--bd:#38587d;--il:#0b0b0b;--id:#ffffff'>1.4</td><td class='dv' style='--bl:#efdedb;--bd:#4a3d3a;--il:#0b0b0b;--id:#c3c2b7'>-0.3</td><td class='dv' style='--bl:#c3d4e7;--bd:#384a5d;--il:#0b0b0b;--id:#c3c2b7'>0.8</td><td class='dv' style='--bl:#679ddd;--bd:#396fae;--il:#ffffff;--id:#ffffff'>2.3</td><td class='dv' style='--bl:#eed6d3;--bd:#523f3c;--il:#0b0b0b;--id:#c3c2b7'>-0.5</td><td class='dv' style='--bl:#efdfdc;--bd:#493d3a;--il:#0b0b0b;--id:#c3c2b7'>-0.3</td><td class='dv' style='--bl:#669cdd;--bd:#396faf;--il:#ffffff;--id:#ffffff'>2.3</td><td class='dv' style='--bl:#3e84d8;--bd:#397fd3;--il:#ffffff;--id:#ffffff'>3.2</td><td class='dv' style='--bl:#c5d5e7;--bd:#38495c;--il:#0b0b0b;--id:#c3c2b7'>0.7</td></tr>
+<tr><td class='act'>DXY</td><td class='dv' style='--bl:#f0edea;--bd:#3b3936;--il:#0b0b0b;--id:#c3c2b7'>-0.0</td><td class='dv' style='--bl:#d1dce9;--bd:#384450;--il:#0b0b0b;--id:#c3c2b7'>0.5</td><td class='dv' style='--bl:#e4e8eb;--bd:#383d40;--il:#0b0b0b;--id:#c3c2b7'>0.2</td><td class='dv' style='--bl:#edc9c6;--bd:#604341;--il:#0b0b0b;--id:#c3c2b7'>-0.8</td><td class='dv' style='--bl:#a6c3e4;--bd:#385576;--il:#0b0b0b;--id:#ffffff'>1.2</td><td class='dv' style='--bl:#efe7e4;--bd:#413a38;--il:#0b0b0b;--id:#c3c2b7'>-0.2</td><td class='dv' style='--bl:#eedcd9;--bd:#4c3d3b;--il:#0b0b0b;--id:#c3c2b7'>-0.4</td><td class='dv' style='--bl:#e9ebeb;--bd:#383b3b;--il:#0b0b0b;--id:#c3c2b7'>0.1</td><td class='dv' style='--bl:#ccd9e8;--bd:#384655;--il:#0b0b0b;--id:#c3c2b7'>0.6</td><td class='dv' style='--bl:#d7e0e9;--bd:#38424b;--il:#0b0b0b;--id:#c3c2b7'>0.4</td><td class='dv' style='--bl:#ccdae8;--bd:#384655;--il:#0b0b0b;--id:#c3c2b7'>0.6</td><td class='dv' style='--bl:#eed1ce;--bd:#57403e;--il:#0b0b0b;--id:#c3c2b7'>-0.6</td></tr>
+<tr><td class='act'>S&amp;P 500</td><td class='dv' style='--bl:#a4c1e4;--bd:#385679;--il:#0b0b0b;--id:#ffffff'>1.3</td><td class='dv' style='--bl:#bcd0e6;--bd:#384d63;--il:#0b0b0b;--id:#c3c2b7'>0.9</td><td class='dv' style='--bl:#d3dee9;--bd:#38434e;--il:#0b0b0b;--id:#c3c2b7'>0.5</td><td class='dv' style='--bl:#8db3e1;--bd:#39608d;--il:#0b0b0b;--id:#ffffff'>1.7</td><td class='dv' style='--bl:#d0dce8;--bd:#384552;--il:#0b0b0b;--id:#c3c2b7'>0.5</td><td class='dv' style='--bl:#c4d5e7;--bd:#384a5c;--il:#0b0b0b;--id:#c3c2b7'>0.7</td><td class='dv' style='--bl:#5391db;--bd:#3977c0;--il:#ffffff;--id:#ffffff'>2.6</td><td class='dv' style='--bl:#efe0dd;--bd:#483c3a;--il:#0b0b0b;--id:#c3c2b7'>-0.3</td><td class='dv' style='--bl:#edcecc;--bd:#5a413f;--il:#0b0b0b;--id:#c3c2b7'>-0.7</td><td class='dv' style='--bl:#71a3de;--bd:#396aa5;--il:#ffffff;--id:#ffffff'>2.1</td><td class='dv' style='--bl:#4487d9;--bd:#397dce;--il:#ffffff;--id:#ffffff'>2.9</td><td class='dv' style='--bl:#cfdbe8;--bd:#384552;--il:#0b0b0b;--id:#c3c2b7'>0.6</td></tr>
+<tr><td class='act'>Cobre</td><td class='dv' style='--bl:#b1c9e5;--bd:#38516d;--il:#0b0b0b;--id:#ffffff'>1.1</td><td class='dv' style='--bl:#649bdc;--bd:#3970b2;--il:#ffffff;--id:#ffffff'>2.4</td><td class='dv' style='--bl:#eedbd8;--bd:#4d3e3b;--il:#0b0b0b;--id:#c3c2b7'>-0.4</td><td class='dv' style='--bl:#d8e0e9;--bd:#38424b;--il:#0b0b0b;--id:#c3c2b7'>0.4</td><td class='dv' style='--bl:#eaa6a4;--bd:#844d4b;--il:#0b0b0b;--id:#ffffff'>-1.5</td><td class='dv' style='--bl:#eed9d6;--bd:#4f3e3c;--il:#0b0b0b;--id:#c3c2b7'>-0.4</td><td class='dv' style='--bl:#e4e8eb;--bd:#383d40;--il:#0b0b0b;--id:#c3c2b7'>0.2</td><td class='dv' style='--bl:#ecc0be;--bd:#694543;--il:#0b0b0b;--id:#c3c2b7'>-0.9</td><td class='dv' style='--bl:#dde4ea;--bd:#384046;--il:#0b0b0b;--id:#c3c2b7'>0.3</td><td class='dv' style='--bl:#a5c2e4;--bd:#385678;--il:#0b0b0b;--id:#ffffff'>1.3</td><td class='dv' style='--bl:#8cb3e1;--bd:#39608e;--il:#0b0b0b;--id:#ffffff'>1.7</td><td class='dv' style='--bl:#5290da;--bd:#3977c1;--il:#ffffff;--id:#ffffff'>2.7</td></tr>
+<tr><td class='act'>Nasdaq 100</td><td class='dv' style='--bl:#689ddd;--bd:#396eae;--il:#ffffff;--id:#ffffff'>2.3</td><td class='dv' style='--bl:#aec7e5;--bd:#385270;--il:#0b0b0b;--id:#ffffff'>1.1</td><td class='dv' style='--bl:#bcd0e6;--bd:#384d63;--il:#0b0b0b;--id:#c3c2b7'>0.9</td><td class='dv' style='--bl:#79a8df;--bd:#39679f;--il:#ffffff;--id:#ffffff'>2.0</td><td class='dv' style='--bl:#74a5de;--bd:#3969a3;--il:#ffffff;--id:#ffffff'>2.1</td><td class='dv' style='--bl:#abc5e4;--bd:#385473;--il:#0b0b0b;--id:#ffffff'>1.2</td><td class='dv' style='--bl:#3e84d8;--bd:#397fd3;--il:#ffffff;--id:#ffffff'>3.6</td><td class='dv' style='--bl:#cfdbe8;--bd:#384553;--il:#0b0b0b;--id:#c3c2b7'>0.6</td><td class='dv' style='--bl:#efdedb;--bd:#4a3d3a;--il:#0b0b0b;--id:#c3c2b7'>-0.3</td><td class='dv' style='--bl:#5e98dc;--bd:#3972b6;--il:#ffffff;--id:#ffffff'>2.4</td><td class='dv' style='--bl:#4b8cda;--bd:#397ac7;--il:#ffffff;--id:#ffffff'>2.8</td><td class='dv' style='--bl:#ebeceb;--bd:#383a3a;--il:#0b0b0b;--id:#c3c2b7'>0.1</td></tr>
+<tr><td class='act'>Gas Natural</td><td class='dv' style='--bl:#e45a58;--bd:#d56262;--il:#ffffff;--id:#ffffff'>-4.1</td><td class='dv' style='--bl:#e45a58;--bd:#d56262;--il:#ffffff;--id:#ffffff'>-5.1</td><td class='dv' style='--bl:#d6e0e9;--bd:#38424c;--il:#0b0b0b;--id:#c3c2b7'>0.4</td><td class='dv' style='--bl:#3e84d8;--bd:#397fd3;--il:#ffffff;--id:#ffffff'>6.3</td><td class='dv' style='--bl:#3e84d8;--bd:#397fd3;--il:#ffffff;--id:#ffffff'>3.2</td><td class='dv' style='--bl:#699edd;--bd:#396ead;--il:#ffffff;--id:#ffffff'>2.3</td><td class='dv' style='--bl:#efe8e5;--bd:#3f3a37;--il:#0b0b0b;--id:#c3c2b7'>-0.1</td><td class='dv' style='--bl:#3e84d8;--bd:#397fd3;--il:#ffffff;--id:#ffffff'>3.9</td><td class='dv' style='--bl:#3e84d8;--bd:#397fd3;--il:#ffffff;--id:#ffffff'>4.2</td><td class='dv' style='--bl:#3e84d8;--bd:#397fd3;--il:#ffffff;--id:#ffffff'>5.6</td><td class='dv' style='--bl:#488ad9;--bd:#397bca;--il:#ffffff;--id:#ffffff'>2.8</td><td class='dv' style='--bl:#e45a58;--bd:#d56262;--il:#ffffff;--id:#ffffff'>-9.8</td></tr>
+<tr><td class='act'>MXN</td><td class='dv' style='--bl:#bfd1e7;--bd:#384c61;--il:#0b0b0b;--id:#c3c2b7'>0.8</td><td class='dv' style='--bl:#e1e6ea;--bd:#383e42;--il:#0b0b0b;--id:#c3c2b7'>0.2</td><td class='dv' style='--bl:#c0d2e7;--bd:#384b60;--il:#0b0b0b;--id:#c3c2b7'>0.8</td><td class='dv' style='--bl:#e8eaeb;--bd:#383b3c;--il:#0b0b0b;--id:#c3c2b7'>0.1</td><td class='dv' style='--bl:#ecbebb;--bd:#6c4644;--il:#0b0b0b;--id:#c3c2b7'>-1.0</td><td class='dv' style='--bl:#e5e8eb;--bd:#383d3f;--il:#0b0b0b;--id:#c3c2b7'>0.2</td><td class='dv' style='--bl:#d9e1e9;--bd:#38414a;--il:#0b0b0b;--id:#c3c2b7'>0.4</td><td class='dv' style='--bl:#e99997;--bd:#92504f;--il:#0b0b0b;--id:#ffffff'>-1.7</td><td class='dv' style='--bl:#eed2cf;--bd:#57403e;--il:#0b0b0b;--id:#c3c2b7'>-0.6</td><td class='dv' style='--bl:#eeeeec;--bd:#383937;--il:#0b0b0b;--id:#c3c2b7'>0.0</td><td class='dv' style='--bl:#eed9d6;--bd:#4f3e3c;--il:#0b0b0b;--id:#c3c2b7'>-0.4</td><td class='dv' style='--bl:#f0eeeb;--bd:#3a3835;--il:#0b0b0b;--id:#c3c2b7'>-0.0</td></tr>
+<tr><td class='act'>AUD</td><td class='dv' style='--bl:#e7eaeb;--bd:#383c3d;--il:#0b0b0b;--id:#c3c2b7'>0.1</td><td class='dv' style='--bl:#eaebeb;--bd:#383a3a;--il:#0b0b0b;--id:#c3c2b7'>0.1</td><td class='dv' style='--bl:#eeeeec;--bd:#383937;--il:#0b0b0b;--id:#c3c2b7'>0.0</td><td class='dv' style='--bl:#c5d5e7;--bd:#38495b;--il:#0b0b0b;--id:#c3c2b7'>0.7</td><td class='dv' style='--bl:#e9908f;--bd:#9b5352;--il:#ffffff;--id:#ffffff'>-1.9</td><td class='dv' style='--bl:#e2e6ea;--bd:#383e42;--il:#0b0b0b;--id:#c3c2b7'>0.2</td><td class='dv' style='--bl:#c7d6e7;--bd:#384859;--il:#0b0b0b;--id:#c3c2b7'>0.7</td><td class='dv' style='--bl:#edc8c6;--bd:#614341;--il:#0b0b0b;--id:#c3c2b7'>-0.8</td><td class='dv' style='--bl:#eed0cd;--bd:#59413e;--il:#0b0b0b;--id:#c3c2b7'>-0.6</td><td class='dv' style='--bl:#d9e1e9;--bd:#38414a;--il:#0b0b0b;--id:#c3c2b7'>0.4</td><td class='dv' style='--bl:#eed7d4;--bd:#523f3c;--il:#0b0b0b;--id:#c3c2b7'>-0.5</td><td class='dv' style='--bl:#cedae8;--bd:#384654;--il:#0b0b0b;--id:#c3c2b7'>0.6</td></tr>
+<tr><td class='act'>VIX</td><td class='dv' style='--bl:#3e84d8;--bd:#397fd3;--il:#ffffff;--id:#ffffff'>8.9</td><td class='dv' style='--bl:#3e84d8;--bd:#397fd3;--il:#ffffff;--id:#ffffff'>6.7</td><td class='dv' style='--bl:#e45a58;--bd:#d56262;--il:#ffffff;--id:#ffffff'>-4.5</td><td class='dv' style='--bl:#efe8e5;--bd:#403a37;--il:#0b0b0b;--id:#c3c2b7'>-0.1</td><td class='dv' style='--bl:#8db3e1;--bd:#39608d;--il:#0b0b0b;--id:#ffffff'>1.7</td><td class='dv' style='--bl:#d1dce9;--bd:#384450;--il:#0b0b0b;--id:#c3c2b7'>0.5</td><td class='dv' style='--bl:#ebb0ae;--bd:#7a4a48;--il:#0b0b0b;--id:#ffffff'>-1.3</td><td class='dv' style='--bl:#3e84d8;--bd:#397fd3;--il:#ffffff;--id:#ffffff'>12.4</td><td class='dv' style='--bl:#3e84d8;--bd:#397fd3;--il:#ffffff;--id:#ffffff'>7.1</td><td class='dv' style='--bl:#488ad9;--bd:#397bca;--il:#ffffff;--id:#ffffff'>2.8</td><td class='dv' style='--bl:#e45a58;--bd:#d56262;--il:#ffffff;--id:#ffffff'>-7.2</td><td class='dv' style='--bl:#3e84d8;--bd:#397fd3;--il:#ffffff;--id:#ffffff'>4.9</td></tr>
+<tr><td class='act'>GBP</td><td class='dv' style='--bl:#cbd9e8;--bd:#384756;--il:#0b0b0b;--id:#c3c2b7'>0.6</td><td class='dv' style='--bl:#eed3d0;--bd:#55403d;--il:#0b0b0b;--id:#c3c2b7'>-0.6</td><td class='dv' style='--bl:#efe1de;--bd:#473c39;--il:#0b0b0b;--id:#c3c2b7'>-0.3</td><td class='dv' style='--bl:#abc6e4;--bd:#385372;--il:#0b0b0b;--id:#ffffff'>1.2</td><td class='dv' style='--bl:#ecb6b4;--bd:#744846;--il:#0b0b0b;--id:#ffffff'>-1.1</td><td class='dv' style='--bl:#efdcd9;--bd:#4c3d3b;--il:#0b0b0b;--id:#c3c2b7'>-0.4</td><td class='dv' style='--bl:#d2dde9;--bd:#384450;--il:#0b0b0b;--id:#c3c2b7'>0.5</td><td class='dv' style='--bl:#eed8d5;--bd:#513f3c;--il:#0b0b0b;--id:#c3c2b7'>-0.5</td><td class='dv' style='--bl:#eed9d6;--bd:#4f3e3c;--il:#0b0b0b;--id:#c3c2b7'>-0.4</td><td class='dv' style='--bl:#f0eae7;--bd:#3e3a37;--il:#0b0b0b;--id:#c3c2b7'>-0.1</td><td class='dv' style='--bl:#e2e7ea;--bd:#383d41;--il:#0b0b0b;--id:#c3c2b7'>0.2</td><td class='dv' style='--bl:#e8eaeb;--bd:#383b3c;--il:#0b0b0b;--id:#c3c2b7'>0.1</td></tr>
+<tr><td class='act'>NZD</td><td class='dv' style='--bl:#ededec;--bd:#383938;--il:#0b0b0b;--id:#c3c2b7'>0.0</td><td class='dv' style='--bl:#efe9e6;--bd:#3f3a37;--il:#0b0b0b;--id:#c3c2b7'>-0.1</td><td class='dv' style='--bl:#efe1de;--bd:#473c39;--il:#0b0b0b;--id:#c3c2b7'>-0.3</td><td class='dv' style='--bl:#ccdae8;--bd:#384655;--il:#0b0b0b;--id:#c3c2b7'>0.6</td><td class='dv' style='--bl:#ebaeac;--bd:#7c4a49;--il:#0b0b0b;--id:#ffffff'>-1.3</td><td class='dv' style='--bl:#e7eaeb;--bd:#383c3d;--il:#0b0b0b;--id:#c3c2b7'>0.1</td><td class='dv' style='--bl:#bcd0e6;--bd:#384d63;--il:#0b0b0b;--id:#c3c2b7'>0.9</td><td class='dv' style='--bl:#ea9f9d;--bd:#8c4f4d;--il:#0b0b0b;--id:#ffffff'>-1.6</td><td class='dv' style='--bl:#edcbc9;--bd:#5e4240;--il:#0b0b0b;--id:#c3c2b7'>-0.7</td><td class='dv' style='--bl:#dee4ea;--bd:#383f45;--il:#0b0b0b;--id:#c3c2b7'>0.3</td><td class='dv' style='--bl:#dee4ea;--bd:#383f45;--il:#0b0b0b;--id:#c3c2b7'>0.3</td><td class='dv' style='--bl:#abc6e4;--bd:#385372;--il:#0b0b0b;--id:#ffffff'>1.2</td></tr>
+<tr><td class='act'>CAD</td><td class='dv' style='--bl:#efdcd9;--bd:#4c3d3b;--il:#0b0b0b;--id:#c3c2b7'>-0.4</td><td class='dv' style='--bl:#eeeeec;--bd:#383937;--il:#0b0b0b;--id:#c3c2b7'>0.0</td><td class='dv' style='--bl:#e8eaeb;--bd:#383b3c;--il:#0b0b0b;--id:#c3c2b7'>0.1</td><td class='dv' style='--bl:#b9cee6;--bd:#384e66;--il:#0b0b0b;--id:#c3c2b7'>0.9</td><td class='dv' style='--bl:#edc3c0;--bd:#664542;--il:#0b0b0b;--id:#c3c2b7'>-0.9</td><td class='dv' style='--bl:#e5e9eb;--bd:#383c3f;--il:#0b0b0b;--id:#c3c2b7'>0.2</td><td class='dv' style='--bl:#dbe3ea;--bd:#384047;--il:#0b0b0b;--id:#c3c2b7'>0.3</td><td class='dv' style='--bl:#eed5d2;--bd:#543f3d;--il:#0b0b0b;--id:#c3c2b7'>-0.5</td><td class='dv' style='--bl:#edcfcc;--bd:#5a413f;--il:#0b0b0b;--id:#c3c2b7'>-0.6</td><td class='dv' style='--bl:#efddda;--bd:#4b3d3b;--il:#0b0b0b;--id:#c3c2b7'>-0.4</td><td class='dv' style='--bl:#eed5d2;--bd:#533f3d;--il:#0b0b0b;--id:#c3c2b7'>-0.5</td><td class='dv' style='--bl:#e7eaeb;--bd:#383c3d;--il:#0b0b0b;--id:#c3c2b7'>0.1</td></tr>
+<tr><td class='act'>CHF</td><td class='dv' style='--bl:#cedbe8;--bd:#384653;--il:#0b0b0b;--id:#c3c2b7'>0.6</td><td class='dv' style='--bl:#efdcd9;--bd:#4c3d3b;--il:#0b0b0b;--id:#c3c2b7'>-0.4</td><td class='dv' style='--bl:#efe6e3;--bd:#423b38;--il:#0b0b0b;--id:#c3c2b7'>-0.2</td><td class='dv' style='--bl:#c6d6e7;--bd:#38495a;--il:#0b0b0b;--id:#c3c2b7'>0.7</td><td class='dv' style='--bl:#edcecc;--bd:#5a413f;--il:#0b0b0b;--id:#c3c2b7'>-0.7</td><td class='dv' style='--bl:#acc6e4;--bd:#385371;--il:#0b0b0b;--id:#ffffff'>1.1</td><td class='dv' style='--bl:#c5d5e7;--bd:#38495b;--il:#0b0b0b;--id:#c3c2b7'>0.7</td><td class='dv' style='--bl:#e0e5ea;--bd:#383e43;--il:#0b0b0b;--id:#c3c2b7'>0.3</td><td class='dv' style='--bl:#ecc1be;--bd:#694543;--il:#0b0b0b;--id:#c3c2b7'>-0.9</td><td class='dv' style='--bl:#efe5e2;--bd:#433b38;--il:#0b0b0b;--id:#c3c2b7'>-0.2</td><td class='dv' style='--bl:#eed5d2;--bd:#543f3d;--il:#0b0b0b;--id:#c3c2b7'>-0.5</td><td class='dv' style='--bl:#93b7e2;--bd:#385d87;--il:#0b0b0b;--id:#ffffff'>1.6</td></tr>
+<tr><td class='act'>JPY</td><td class='dv' style='--bl:#d3dee9;--bd:#38434e;--il:#0b0b0b;--id:#c3c2b7'>0.5</td><td class='dv' style='--bl:#eed7d4;--bd:#513f3c;--il:#0b0b0b;--id:#c3c2b7'>-0.5</td><td class='dv' style='--bl:#ecbcba;--bd:#6d4644;--il:#0b0b0b;--id:#ffffff'>-1.0</td><td class='dv' style='--bl:#f0eeeb;--bd:#393835;--il:#0b0b0b;--id:#c3c2b7'>-0.0</td><td class='dv' style='--bl:#efe2df;--bd:#463c39;--il:#0b0b0b;--id:#c3c2b7'>-0.3</td><td class='dv' style='--bl:#f0e9e6;--bd:#3e3a37;--il:#0b0b0b;--id:#c3c2b7'>-0.1</td><td class='dv' style='--bl:#afc8e5;--bd:#38526f;--il:#0b0b0b;--id:#ffffff'>1.1</td><td class='dv' style='--bl:#e4e8eb;--bd:#383d40;--il:#0b0b0b;--id:#c3c2b7'>0.2</td><td class='dv' style='--bl:#edc5c3;--bd:#644442;--il:#0b0b0b;--id:#c3c2b7'>-0.8</td><td class='dv' style='--bl:#ecbdbb;--bd:#6c4644;--il:#0b0b0b;--id:#c3c2b7'>-1.0</td><td class='dv' style='--bl:#ebafad;--bd:#7b4a48;--il:#0b0b0b;--id:#ffffff'>-1.3</td><td class='dv' style='--bl:#ebeceb;--bd:#383a39;--il:#0b0b0b;--id:#c3c2b7'>0.1</td></tr>
+<tr><td class='act'>Oro</td><td class='dv' style='--bl:#3e84d8;--bd:#397fd3;--il:#ffffff;--id:#ffffff'>3.3</td><td class='dv' style='--bl:#a9c5e4;--bd:#385474;--il:#0b0b0b;--id:#ffffff'>1.2</td><td class='dv' style='--bl:#c7d6e7;--bd:#384859;--il:#0b0b0b;--id:#c3c2b7'>0.7</td><td class='dv' style='--bl:#8cb3e1;--bd:#39608e;--il:#0b0b0b;--id:#ffffff'>1.7</td><td class='dv' style='--bl:#edcbc8;--bd:#5e4240;--il:#0b0b0b;--id:#c3c2b7'>-0.7</td><td class='dv' style='--bl:#edc8c5;--bd:#614341;--il:#0b0b0b;--id:#c3c2b7'>-0.8</td><td class='dv' style='--bl:#9fbee3;--bd:#38587d;--il:#0b0b0b;--id:#ffffff'>1.4</td><td class='dv' style='--bl:#5391db;--bd:#3977c0;--il:#ffffff;--id:#ffffff'>2.6</td><td class='dv' style='--bl:#ebb4b2;--bd:#764947;--il:#0b0b0b;--id:#ffffff'>-1.2</td><td class='dv' style='--bl:#a2c0e3;--bd:#38577a;--il:#0b0b0b;--id:#ffffff'>1.3</td><td class='dv' style='--bl:#edc9c6;--bd:#604341;--il:#0b0b0b;--id:#c3c2b7'>-0.8</td><td class='dv' style='--bl:#c2d4e7;--bd:#384a5e;--il:#0b0b0b;--id:#c3c2b7'>0.8</td></tr>
+<tr><td class='act'>WTI</td><td class='dv' style='--bl:#5f98dc;--bd:#3972b6;--il:#ffffff;--id:#ffffff'>2.4</td><td class='dv' style='--bl:#5994db;--bd:#3974bc;--il:#ffffff;--id:#ffffff'>2.5</td><td class='dv' style='--bl:#78a7df;--bd:#3968a0;--il:#ffffff;--id:#ffffff'>2.0</td><td class='dv' style='--bl:#4588d9;--bd:#397ccd;--il:#ffffff;--id:#ffffff'>2.9</td><td class='dv' style='--bl:#abc5e4;--bd:#385473;--il:#0b0b0b;--id:#ffffff'>1.2</td><td class='dv' style='--bl:#9fbee3;--bd:#38587d;--il:#0b0b0b;--id:#ffffff'>1.4</td><td class='dv' style='--bl:#eed3d0;--bd:#55403d;--il:#0b0b0b;--id:#c3c2b7'>-0.6</td><td class='dv' style='--bl:#ea9d9b;--bd:#8e4f4e;--il:#0b0b0b;--id:#ffffff'>-1.6</td><td class='dv' style='--bl:#edcecc;--bd:#5a413f;--il:#0b0b0b;--id:#c3c2b7'>-0.7</td><td class='dv' style='--bl:#edcbc9;--bd:#5e4240;--il:#0b0b0b;--id:#c3c2b7'>-0.7</td><td class='dv' style='--bl:#e67170;--bd:#bc5c5b;--il:#ffffff;--id:#ffffff'>-2.5</td><td class='dv' style='--bl:#adc7e5;--bd:#385370;--il:#0b0b0b;--id:#ffffff'>1.1</td></tr>
+<tr><td class='act'>EUR</td><td class='dv' style='--bl:#f0efec;--bd:#383835;--il:#0b0b0b;--id:#c3c2b7'>0.0</td><td class='dv' style='--bl:#eed8d5;--bd:#513f3c;--il:#0b0b0b;--id:#c3c2b7'>-0.5</td><td class='dv' style='--bl:#f0efec;--bd:#393835;--il:#0b0b0b;--id:#c3c2b7'>-0.0</td><td class='dv' style='--bl:#c1d3e7;--bd:#384b5f;--il:#0b0b0b;--id:#c3c2b7'>0.8</td><td class='dv' style='--bl:#ebaeac;--bd:#7c4a49;--il:#0b0b0b;--id:#ffffff'>-1.3</td><td class='dv' style='--bl:#dce3ea;--bd:#384047;--il:#0b0b0b;--id:#c3c2b7'>0.3</td><td class='dv' style='--bl:#dee4ea;--bd:#383f45;--il:#0b0b0b;--id:#c3c2b7'>0.3</td><td class='dv' style='--bl:#ecedec;--bd:#383a39;--il:#0b0b0b;--id:#c3c2b7'>0.1</td><td class='dv' style='--bl:#eed6d3;--bd:#523f3c;--il:#0b0b0b;--id:#c3c2b7'>-0.5</td><td class='dv' style='--bl:#eaebeb;--bd:#383a3a;--il:#0b0b0b;--id:#c3c2b7'>0.1</td><td class='dv' style='--bl:#ecc1be;--bd:#694543;--il:#0b0b0b;--id:#c3c2b7'>-0.9</td><td class='dv' style='--bl:#c2d4e7;--bd:#384a5e;--il:#0b0b0b;--id:#c3c2b7'>0.8</td></tr>
+<tr><td class='act'>Plata</td><td class='dv' style='--bl:#3e84d8;--bd:#397fd3;--il:#ffffff;--id:#ffffff'>3.7</td><td class='dv' style='--bl:#96b9e2;--bd:#385c85;--il:#0b0b0b;--id:#ffffff'>1.5</td><td class='dv' style='--bl:#ebeceb;--bd:#383a3a;--il:#0b0b0b;--id:#c3c2b7'>0.1</td><td class='dv' style='--bl:#9cbce3;--bd:#385a80;--il:#0b0b0b;--id:#ffffff'>1.4</td><td class='dv' style='--bl:#edccca;--bd:#5d4240;--il:#0b0b0b;--id:#c3c2b7'>-0.7</td><td class='dv' style='--bl:#e99492;--bd:#975250;--il:#0b0b0b;--id:#ffffff'>-1.8</td><td class='dv' style='--bl:#3e84d8;--bd:#397fd3;--il:#ffffff;--id:#ffffff'>3.4</td><td class='dv' style='--bl:#4488d9;--bd:#397cce;--il:#ffffff;--id:#ffffff'>2.9</td><td class='dv' style='--bl:#e77775;--bd:#b65a59;--il:#ffffff;--id:#ffffff'>-2.4</td><td class='dv' style='--bl:#5592db;--bd:#3976bf;--il:#ffffff;--id:#ffffff'>2.6</td><td class='dv' style='--bl:#eeeeec;--bd:#383937;--il:#0b0b0b;--id:#c3c2b7'>0.0</td><td class='dv' style='--bl:#5c96dc;--bd:#3973b8;--il:#ffffff;--id:#ffffff'>2.5</td></tr></table>
+<div class="leyenda">Mes en curso subrayado. Azul = históricamente positivo, rojo = negativo (escala ±3%).</div></div>
+
+<h2>Sentimiento</h2>
+<div class="tiles"><div class='tile'><div class='tl'>Fear &amp; Greed (CNN)</div><div class='tv'>42 <span class='tr'>fear</span></div><div class='td'>hace 1 sem: 30 · hace 1 mes: 40</div></div><div class='tile'><div class='tl'>Put/Call total (CBOE)</div><div class='tv'>0.90</div><div class='td'>prom. 20d: 0.92</div></div><div class='tile'><div class='tl'>Put/Call equity</div><div class='tv'>0.69</div><div class='td'>prom. 20d: 0.61</div></div><div class='tile'><div class='tl'>VIX</div><div class='tv'>16.1</div><div class='td'>1m: <span class='up'>+2.4%</span> · vs SMA200: <span class='dn'>-13.5%</span></div></div></div>
+
+<h2>Calendario económico (alto y medio impacto, hora CDMX)</h2>
+<div class="card"><table>
+<tr><th>Día</th><th>Hora</th><th>Divisa</th><th>Evento</th><th>Pronóstico</th><th>Previo</th></tr><tr class='hi'><td>miércoles 08</td><td>12:00</td><td class='act'>USD</td><td>FOMC Meeting Minutes</td><td>–</td><td>–</td></tr>
+<tr class='hi'><td>miércoles 08</td><td>20:00</td><td class='act'>NZD</td><td>Official Cash Rate</td><td>2.50%</td><td>2.25%</td></tr>
+<tr class='hi'><td>miércoles 08</td><td>20:00</td><td class='act'>NZD</td><td>RBNZ Rate Statement</td><td>–</td><td>–</td></tr>
+<tr class='hi'><td>miércoles 08</td><td>21:00</td><td class='act'>NZD</td><td>RBNZ Press Conference</td><td>–</td><td>–</td></tr>
+<tr class=''><td>jueves 09</td><td>06:30</td><td class='act'>USD</td><td>Unemployment Claims</td><td>218K</td><td>215K</td></tr>
+<tr class='hi'><td>viernes 10</td><td>06:30</td><td class='act'>CAD</td><td>Employment Change</td><td>11.2K</td><td>87.8K</td></tr>
+<tr class='hi'><td>viernes 10</td><td>06:30</td><td class='act'>CAD</td><td>Unemployment Rate</td><td>6.6%</td><td>6.6%</td></tr></table>
+<div class="leyenda">En negritas: alto impacto. Fuente: ForexFactory.</div></div>
+
+<footer>Datos: CFTC (COT) · FRED · OCDE vía DBnomics · BIS (tasas) · Eurostat ·
+Yahoo Finance (precios) · CNN (Fear &amp; Greed) · CBOE (put/call) · ForexFactory (calendario).
+Uso personal. Los scores son un resumen mecánico, no una recomendación de inversión.</footer>
+
